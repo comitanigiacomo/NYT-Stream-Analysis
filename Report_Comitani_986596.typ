@@ -7,7 +7,7 @@
   title: [Project 7: Data Streaming Algorithms],
   authors: "Giacomo Comitani",
   date: datetime(year: 2026, month: 03, day: 20),
-  abstract: [This report presents the implementation of two fundamental streaming algorithms, Flajolet-Martin and Bloom Filter. The algorithms were applied to the New York Times comments datasets from 2020. The Flajolet-Martin algorithm is used to calculate the number of unique users that have commented, using an aproach that combines ideas from the original 1985 paper and the updated LogLog version of 2003 to obtain a correct result in a reasonable time. The Bloom Filter isolates the comments regarding science articles, with all the parameters chosen and justified by theoretical bases. The results of the work demonstrated that both the implementations returned accurate results, achieving a relative error of 5% for the Flajolet-Martin estimate and a False Postive Rate of 0.3% for the filter, in a reasonable time. Both implementations achieved $O(1)$ space complexity and linear time complexity, making them suitable for real-world data streams.],
+  abstract: [This report presents the implementation of two fundamental streaming algorithms, Flajolet-Martin and Bloom Filter. The algorithms were applied to the New York Times comments datasets from 2020. The Flajolet-Martin algorithm is used to calculate the number of unique users that have commented, using an approach that combines ideas from the original 1985 paper and the updated LogLog version of 2003 to obtain a correct result in a reasonable time. The Bloom Filter isolates the comments regarding science articles, with all the parameters chosen and justified by theoretical bases. The results of the work demonstrated that both the implementations returned accurate results, achieving a relative error of 5% for the Flajolet-Martin estimate and a False Positive Rate of 0.3% for the filter, in a reasonable time. Both implementations achieved $O(1)$ space complexity and linear time complexity, making them suitable for real-world data streams.],
   table-of-contents: none,
   bibliography: bibliography("works.bib"),
 )
@@ -49,14 +49,14 @@ Since the algorithm counts the total unique users at specific moment, the progra
 
 ==== Algorithm 2: Bloom Filter
 
-After the implementation of the *Flajolet-Martin* algorithm, i focused on implementing the *Bloom Filter*. By grouping all the comments regarding articles of a specific section, I thought it would be a great feature for the New York Times website to create dedicated subsections. This way, if a user wants to see only specific information, he could land on a specific page with all the information only for that section.
+After the implementation of the *Flajolet-Martin* algorithm, I focused on implementing the *Bloom Filter*. By grouping all the comments regarding articles of a specific section, I thought it would be a great feature for the New York Times website to create dedicated subsections. This way, if a user wants to see only specific information, he could land on a specific page with all the information only for that section.
 To understand which section to build first, a programmer would need to see which sections receive the most comments. With the Bloom Filter, this information can be obtained in a fast and reasonable way.
 
 #pagebreak()
 
 === Experiments and Scalability Evaluation
 
-In this section of the project, I observed the real-word performance of my implementations.
+In this section of the project, I observed the real-world performance of my implementations.
 
 The approach was to process the dataset and compare the exact result obtained with some built-in Python functions like `set()`, with the estimates obtained from my implementations of the algorithms. This allowed me to verify if the accuracy corresponds to the theoretical formula.
 
@@ -80,7 +80,7 @@ Looking at the official Pandas documentation for `read_csv` @pydataPandasread_cs
 
 _"Note that the entire file is read into a single DataFrame regardless, use the chunksize or iterator parameter to return the data in chunks."_
 
-So the best approach was to use the *yield* statement directly in Python. This is because the *return* statement terminates the function and destroy its context, meaning that it has to compute and store all the data before the function ends. Instead, the *yield* statement outputs the result and pauses, processing the data step by step without storing the entire dataset.
+So the best approach was to use the *yield* statement directly in Python. This is because the *return* statement terminates the function and destroys its context, meaning that it has to compute and store all the data before the function ends. Instead, the *yield* statement outputs the result and pauses, processing the data step by step without storing the entire dataset.
 
 === Flajolet-Martin algorithm
 
@@ -99,7 +99,7 @@ Running the command:
 ]
 to count the total number of lines, I can see that they are circa `13,231,956`.
 
-The project needs to scale up with real-world scenarios, so i used a 128-bit hash functions in order to potentially manage massive datasets.
+The project needs to scale up with real-world scenarios, so I used a 128-bit hash functions in order to potentially manage massive datasets.
 
 Later on, the book suggests:
 
@@ -119,7 +119,7 @@ This solves two big problems:
 
 Grouping the hashes and taking the median of the averages gives a much more stable estimate.
 
-Regarding the choice of which hash function to use in the project, I first discarted the built-in Python `hash()` function. This because it only accepts a single parameter to hash, which wouldn't allow me to have several different hash functions. So i searched for a hash function family that would permit me to generate many different hashes in a few lines of code.
+Regarding the choice of which hash function to use in the project, I first discarted the built-in Python `hash()` function. This because it only accepts a single parameter to hash, which wouldn't allow me to have several different hash functions. So I searched for a hash function family that would permit me to generate many different hashes in a few lines of code.
 
 Collecting information about hash functions and the implementation of Flajolet-Martin and bloom filters, I found out that the perfect trade-off between speed and uniformity was the *MurmurHash* family @stackoverflowWhichHash. Using `mmh3.hash128` was perfect for my scope:
 
@@ -229,9 +229,9 @@ Following the suggestion in the project description, I decided to build a bloom 
 
 My goal was to first scan the articles file to save the hashes of the `Science` articles, building the Bloom Filter. Then, I scanned the stream of million comments to identify only the comments made on science articles.
 
-This approach was great for the scope of the project, because without the bloom filter , a standard search tree or hash table wouldn't fit in RAM.
+This approach was great for the scope of the project, because without the bloom filter, a standard search tree or hash table wouldn't fit in RAM.
 
-In a real-word example this mechanism would be perfect for isolating a specific stream of comments to create a dedicated view on a website, or in any another context where a user only wants to see science-related discussions.
+In a real-world example this mechanism would be perfect for isolating a specific stream of comments to create a dedicated view on a website, or in any other context where a user only wants to see science-related discussions.
 
 ==== Creating the trusted list S
 
@@ -287,9 +287,9 @@ In this phase I needed to initialize an array of `m` bits to `0`, choose `k` ind
 
 To understand what value assign to $m$, I initially checked the length of my trusted list $S$: `354` unique articles ($n = 354$)
 
-In example `4.4.3` of the textbook, the author assign `8` bits of memory for each element inserted in the filter. With the goal of scaling up my algorithm for real-world scenarios, I assigned `10` bits for element. Since there are `354` elements in the trusted list, I calculated $m = 354 * 10 = 3540$
+In example `4.4.3` of the textbook, the author assigns `8` bits of memory for each element inserted in the filter. With the goal of scaling up my algorithm for real-world scenarios, I assigned `10` bits per element. Since there are `354` elements in the trusted list, I calculated $m = 354 * 10 = 3540$
 
-The textbook later suggest:
+The textbook later suggests:
 
 _"We might choose $k$, the number of hash functions, to be $m/n$ or less"_
 
@@ -309,7 +309,7 @@ This translates to a relative error of $(20,471)/(403,025) = 5%$ in `6` minutes,
 
 === Flajolet Scalability Analysis
 
-The space complexity is O(1). This is because, regardless of the size of the dataset, due to the use of `yield`, the step-by-step results are continuously overwritten. As a result, only one hash is present in the RAM at any given time.
+The space complexity is $O(1)$. This is because, regardless of the size of the dataset, due to the use of `yield`, the step-by-step results are continuously overwritten. As a result, only one hash is present in the RAM at any given time.
 
 During the experimental phase, by changing the number of hashes or the number of groups, I could observe that the time complexity was linear: $O(N times "num_hashes")$ where $N$ is the size of the dataset. This happens because the execution time increases as the number of hashes increases, due to the `for` loop inside the `analyze_user_ID` function.
 
@@ -338,10 +338,9 @@ Since I expected to have `1784` bits set to `1`, this means that my filter will 
 
 This is not a casual result, since the filter works well when it is half full, and I observed that $k=7$ gave me the best possible result.
 
-Finally, I can calculate the false Positive rate (FPR):
+Finally, I can calculate the False Positive rate (FPR):
 
 $ "FPR" = (1 - e^(-k * n/m))^k = 0.504^7 = 0.8% $
-
 
 So theoretically my bloom filter should have an error rate of about 0.8 %.
 
@@ -352,11 +351,17 @@ Considering that:
 - The comments to discard = $4,986,461 - 23,698 = 4,962,763$
 - The output of the bloom filter (comments probably about science) = `39,888`
 
-The false positive actually obtained by the filter were: $39,888 - 23,698 = 16,190$
+The False Positives (FP) actually obtained by the filter were: 
 
-By calculating the real FPR:
+$ 39,888 - 23,698 = 16,190 $
 
-$ "FPR"_("real") = (16,190) / (4,962,763) = 0.003 $
+The True Negatives (TN) correctly discarted by the filter were:
+
+$ 4,962,763 - 16,190 = 4,946,573 $
+
+By calculating the real FPR using the explicit formula $"FPR" = ("FP")/("FP" + "TN")$:
+
+$ "FPR"_("real") = (16,190) / (16,190 + 4,946,573) = 0.003 $
 
 So the filter obtained an error of 0.3%, a great result.
 
