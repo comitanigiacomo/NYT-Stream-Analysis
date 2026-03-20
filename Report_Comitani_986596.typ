@@ -1,34 +1,43 @@
 #import "@preview/ilm:2.0.0": *
 
 #set text(lang: "en")
+#set text(size: 10.5pt)
 
 #show: ilm.with(
   title: [Project 7: Data Streaming Algorithms],
   authors: "Giacomo Comitani",
   date: datetime(year: 2026, month: 03, day: 20),
-  abstract: [],
+  abstract: [This report presents the implementation of two fundamental streaming algorithms, Flajolet-Martin and Bloom Filter. The algorithms were applied to the New York Times comments datasets from 2020. The Flajolet-Martin algorithm is used to calculate the number of unique users that have commented, using an aproach that combines ideas from the original 1985 paper and the updated LogLog version of 2003 to obtain a correct result in a reasonable time. The Bloom Filter isolates the comments regarding science articles, with all the parameters chosen and justified by theoretical bases. The results of the work demonstrated that both the implementations returned accurate results, achieving a relative error of 5% for the Flajolet-Martin estimate and a False Postive Rate of 0.3% for the filter, in a reasonable time. Both implementations achieved $O(1)$ space complexity and linear time complexity, making them suitable for real-world data streams.],
   table-of-contents: none,
   bibliography: bibliography("works.bib"),
-  figure-index: (enabled: false),
-  table-index: (enabled: false),
-  listing-index: (enabled: false)
 )
 
-#show link: underline
-#set text(size: 10.5pt)
-
+#set page(
+  header: context [
+    #set text(size: 10pt)
+    Giacomo Comitani -- 85673A
+    #line(length: 100%, stroke: rgb("#919191"))
+  ],
+  footer: context [
+    #line(length: 100%, stroke: rgb("#919191"))
+    #set text(size: 10pt)
+    University of Milan -- Department of Computer Science
+    #h(1fr)
+    #counter(page).display()
+  ],
+)
 
 = Project 7: Stream Analysis
 
-== Introduction: Base Idea, Scope and Structure of the Work
+== Initial Declarations
 
 “I declare that this material, which I now submit for assessment, is entirely my own work and has not been taken from the work of others, save and to the extent that such work has been cited and acknowledged within the text of my work. I understand that plagiarism, collusion, and copying are grave and serious offences in the university and accept the penalties that would be imposed should I engage in plagiarism, collusion or copying. This assignment, or any part of it, has not been previously submitted by me or any other person for assessment on this or any other course of study. No generative AI tool has been used to write the code or the report content.“
+
+_All the experimental results of the project refer to the version of the dataset downloaded on 20 March 2026._
 
 === Main Idea for the Project
 
 My idea for the project was to first implement the` Flajolet-Martin` algorithm to count the number of unique users who commented on the New York Times in 2020. After that, I implemented a Bloom Filter which was used to filter and count the comments made on articles regarding Science.
-
-_All the experimental results of the project refer to the version of the dataset downloaded on 20 March 2026._
 
 ==== Algorithm 1: Flajolet-Martin
 
@@ -43,6 +52,8 @@ Since the algorithm counts the total unique users at specific moment, the progra
 After the implementation of the `Flajolet-Martin` algorithm, i focused on implementing the `Bloom Filter`. By grouping all the comments regarding articles of a specific section, I thought it would be a great feature for the New York Times website to create dedicated subsections. This way, if a user wants to see only specific information, he could land on a specific page with all the information only for that section.
 To understand which section to build first, a programmer would need to see which sections receive the most comments. With the Bloom Filter, this information can be obtained in a fast and reasonable way.
 
+#pagebreak()
+
 === Experiments and Scalability Evaluation
 
 In this section of the project, I observed the real-word performance of my implementations.
@@ -50,8 +61,6 @@ In this section of the project, I observed the real-word performance of my imple
 The approach was to process the dataset and compare the exact result obtained with some built-in Python functions like `set()`, with the estimates obtained from my implementations of the algorithms. This allowed me to verify if the accuracy corresponds to the theorical formula.
 
 Finally, I generated some graphs to visualize the extracted data, in order to make the final results easier to visualize.
-
-#pagebreak()
 
 == Important Choices
 
@@ -67,13 +76,13 @@ To simulate data streams and work with larger files, the solution is to use a *g
 
 A *lazy iterator* is an object that I can loop over without storing its entire content in memory. This is perfect for this project because it allows me to simulate a continuous stream and process large files that are too big for my machine's RAM.
 
-Looking at the official Pandas documentation for `read_csv` @pydataPandasread_csvx2014, I found confirmation that the function loads everything directly into memory: 
+Looking at the official Pandas documentation for `read_csv` @pydataPandasread_csvx2014, I found confirmation that the function loads everything directly into memory:
 
 _"Note that the entire file is read into a single DataFrame regardless, use the chunksize or iterator parameter to return the data in chunks."_
 
 So the best approach was to use the *yield* statement directly in Python. This is because the *return* statement terminates the function and destroy its context, meaning that it has to compute and store all the data before the function ends. Instead, the *yield* statement outputs the result and pauses, processing the data step by step without storing the entire dataset.
 
-=== FlajoletMartin algorithm
+=== Flajolet-Martin algorithm
 
 ==== Hashing the elements
 
@@ -84,9 +93,9 @@ _"The length of the bit-string must be sufficient that there are more possible r
 Running the command:
 
 #align(center)[
-```terminal
- cat nyt-comments-part*.csv | wc -l 
-```
+  ```terminal
+   cat nyt-comments-part*.csv | wc -l
+  ```
 ]
 to count the total number of lines, I can see that they are circa `13,231,956`.
 
@@ -102,9 +111,9 @@ Finally, to combine the results, I calculated the averages and then the median o
 
 _"We can combine the two methods. First, group the hash functions into small groups, and take their average. Then, take the median of the averages."_
 
-This solves two big problems: 
+This solves two big problems:
 
-- A simple mean is easily ruined by extreme outliers 
+- A simple mean is easily ruined by extreme outliers
 
 - A simple median is too rigid because it only returns exact powers of 2.
 
@@ -144,15 +153,13 @@ The solution was to perform a bitwise *AND* operation between the hash `h` and i
 
 Adding this `1` generates a chain of carries that leaves all the original trailing zeros intact and stops exactly at the first `1`. As a result, all the bits to the left remain inverted compared to the original number. Performing a bitwise AND between `h` and -`h` cancels out all the inverted bits on the left and the zeros on the right, allowing me to instantly isolate the power of 2 that corresponds to the trailing zeros:
 
-#pagebreak()
-
 ```Python
-def analyze_user_ID(self, item): 
+def analyze_user_ID(self, item):
         for i in range(self.num_hashes):
             h = mmh3.hash128(str(item), i)
-            
+
             lowest_bit_value = h & -h
-            
+
             if lowest_bit_value > self.output_powers[i]:
                 self.output_powers[i] = lowest_bit_value
 ```
@@ -163,6 +170,8 @@ Initially, I implemented the algorithm strictly following the textbook version a
 Although the execution time was reasonable, the final estimate was significantly over the correct one. To count the real number of unique users I used Python's built-in `set()` data structure, which resulted in `403,025`.
 
 However, the algorithm's estimate, even utilizing `256` different hash functions, resulted in `1,091,584`. To understand the issue, I started by debugging the code and printing the various groups to find the reasons behind this overestimation:
+
+#pagebreak()
 
 ```python
 Group 1: [524288, 262144, 131072, 131072, 65536, 131072, `8388608`, 262144, `4194304`, 1048576, 262144, 524288, 262144, 131072, `4194304`, `2097152`]
@@ -184,11 +193,11 @@ Group 8: [131072, 262144, 1048576, 8388608, `2097152`, 262144, 262144, 1048576, 
 
 I observed that almost every group contained at least one huge extreme outlier. For instance, group 5 contained value `134,217,728`.
 
-This led me to think that this version of the algorithm was high susceptible to variance, because a single big hash could compromise the mean of the entire group, causing the algorithm to overestimate. 
+This led me to think that this version of the algorithm was high susceptible to variance, because a single big hash could compromise the mean of the entire group, causing the algorithm to overestimate.
 
 Even increasing the number of hash functions or groups led to the same result, just taking a lot more time. With `512` hash functions and `32` groups, the result was still `1,071,104`
 
-Chasing a better result, I reread the section from the book and found the following quote: 
+Chasing a better result, I reread the section from the book and found the following quote:
 
 _"In order to guarantee that any possible average can be obtained, groups should be of size at least a small multiple of log2 m."_
 
@@ -202,7 +211,7 @@ At first I noticed the presence of a constant. I found out that it was a *correc
 
 However, even multiplying the previous result for the correction factor did not bring the expected result, because the algorithm result was still `844,351` unique users.
 
-To resolve the problem, I continued reading the wikipedia page and found out that the algorithm underwent an offical evolution in 2003 by the same author, called the *loglog* algorithm @FlajoletLogLog. The base idea of this new algorithm is to calculate the average of the maximum number of trailing zeroes directly, and then return $2^"average"$. So I proceeded by adjusting only the way my algorithm worked: simply changing one line of logic allowed me to get a really good estimate.
+To resolve the problem, I continued reading the wikipedia page and found out that the algorithm underwent an official evolution in 2003 by the same author, called the *loglog* algorithm @FlajoletLogLog. The base idea of this new algorithm is to calculate the average of the maximum number of trailing zeroes directly, and then return $2^"average"$. So I proceeded by adjusting only the way my algorithm worked: simply changing one line of logic allowed me to get a really good estimate.
 
 Thinking about how to efficiently extract only the trailing zeros, I landed one more time on StackOverflow @stackoverflowPythonicCount.
 
@@ -243,9 +252,8 @@ The first implementation that came to my mind to create the initial trusted list
 import csv
 
 def create_trusted_list(repo):
-    
     s = set()
-        
+
     with open(repo + "nyt-articles-2020.csv", mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
         headers = next(reader)
@@ -257,17 +265,17 @@ def create_trusted_list(repo):
     return s
 ```
 
-However in this way, if the initial file was too big, I would load too much data into the RAM all at once. The solution, once again, was to use the *yield* keyword to create a generator: 
+However in this way, if the initial file was too big, I would load too much data into the RAM all at once. The solution, once again, was to use the *yield* keyword to create a generator:
 
 ```python
 def create_trusted_list(repo):
     with open(repo + "nyt-articles-2020.csv", mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
         headers = next(reader)
-        
+
         article_id = headers.index("uniqueID")
         article_section = headers.index("section")
-        
+
         for row in reader:
             if row[article_section] == "Science":
                 yield row[article_id]
@@ -293,11 +301,11 @@ Starting from `10`, I tried  some different values for `k` until I found  $k= 7$
 
 === Flajolet-Martin implementation
 
-The algorithm returned a very good estimate of the real unique users in a reasonable time: `423,496` in `6` minutes. Considering that the real number of users, calculated by finding the length of the built-in `set()` data structure was `403,025`, this means that the implementation had an error of: 
+The algorithm returned a very good estimate of the real unique users in a reasonable time: `423,496` in `6` minutes. Considering that the real number of users, calculated by finding the length of the built-in `set()` data structure was `403,025`, this means that the implementation had an error of:
 
-$423,496 - 403,025 = 20,471$
+$ 423,496 - 403,025 = 20,471 $
 
-This translate to a relative error of $20,471/403,025 = 5%$ in `6` minutes, while scanning `13,231,956` lines and using little RAM due to the techniques described above. In my opinion, this makes the implementation suitable for massive datasets in real-world scenarios.
+This translates to a relative error of $(20,471)/(403,025) = 5%$ in `6` minutes, while scanning `13,231,956` lines and using little RAM due to the techniques described above. In my opinion, this makes the implementation suitable for massive datasets in real-world scenarios.
 
 === Flajolet Scalability Analysis
 
@@ -307,7 +315,7 @@ During the experimental phase, by changing the number of hashes or the number of
 
 === Bloom Filter implementation
 
-Regarding the implementation of the bloom filter, i made an analysis based on the theory I learned in class.
+Regarding the implementation of the bloom filter, I made an analysis based on the theory I learned in class.
 
 The algorithm returned a value of `39,888` comments about science out of `4,986,461` total comments. To verify the real number, I once again utilized the built-in  Python `set()`, to count the exact number of comments and compared it with the result produced by the filter. This way, I found that the real number of comments regarding Science was `23,698`.
 
@@ -319,19 +327,21 @@ The probability that a bit of the bit array is `1` is $1 - e^(-k*(n/m))$. consid
 - $m = 3540$  (size of the array of zeros)
 - $k = 7$ (number of the hash functions)
 
-$1 - e^(-k*(n/m)) = 1 - e^(-7 * 0.1) = 1 - 0.496 = 0.504$
+$ 1 - e^(-k*(n/m)) = 1 - e^(-7 * 0.1) = 1 - 0.496 = 0.504 $
 
 Since this is the probability of finding a random bit set to `1`, to understand how many bits will be turned on after the initial hashing phase, I can calculate the expected value $E$ as:
 
-$E = 3540 * 0.504 = 1784$
+$ E = 3540 * 0.504 = 1784 $
 
-Since i expected to have `1784` bits set to `1`, this means that my filter will be full by the  $1784/3540 = 50.4%$
 
-This is not a casual result, since the filter works well when it is half full, and i observed that $k=7$ give me the best possible result.
+Since I expected to have `1784` bits set to `1`, this means that my filter will be full by the  $1784/3540 = 50.4%$
 
-Finally, i can calculate the false Positive rate (FPR):
+This is not a casual result, since the filter works well when it is half full, and I observed that $k=7$ gave me the best possible result.
 
-$"FPR" = (1 - e^(-k * n/m))^k = 0.504^7 = 0.8%$
+Finally, I can calculate the false Positive rate (FPR):
+
+$ "FPR" = (1 - e^(-k * n/m))^k = 0.504^7 = 0.8% $
+
 
 So theoretically my bloom filter should have an error rate of about 0.8 %.
 
@@ -339,14 +349,14 @@ Considering that:
 
 - The filter analyzed `4,986,461` comments
 - The real number of comments about articles regarding science were: `23,698`
-- The comments to discard = $4,986,461 - 23,698 = 4,962,763$ 
+- The comments to discard = $4,986,461 - 23,698 = 4,962,763$
 - The output of the bloom filter (comments probably about science) = `39,888`
 
 The false positive actually obtained by the filter were: $39,888 - 23,698 = 16,190$
 
 By calculating the real FPR:
 
-$"FPR"_("real") = (16,190) / (4,962,763) = 0.003$
+$ "FPR"_("real") = (16,190) / (4,962,763) = 0.003 $
 
 So the filter obtained an error of 0.3%, a great result.
 
@@ -354,6 +364,6 @@ So the filter obtained an error of 0.3%, a great result.
 
 The space complexity is completely independent of the stream size $N$, because in the implementation I set a fixed amount of RAM $m = 3540$ bits (only the array of bits will be loaded into RAM).
 
-The time complexity can be calculated considering the loop to create the filter, and then the time the filter is used on the data stream, resulting in $O(N times k)$ where k is the number of hash functions.
+The time complexity can be calculated considering the loop to create the filter, and then the time the filter is used on the data stream, resulting in $O(N times k)$ where $k$ is the number of hash functions.
 
 So basically, the implementation of the algorithm can scale up to millions of comments in a real-world context.
