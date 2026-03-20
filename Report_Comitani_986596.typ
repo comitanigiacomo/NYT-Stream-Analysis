@@ -37,11 +37,11 @@ _All the experimental results of the project refer to the version of the dataset
 
 === Main Idea for the Project
 
-My idea for the project was to first implement the` Flajolet-Martin` algorithm to count the number of unique users who commented on the New York Times in 2020. After that, I implemented a Bloom Filter which was used to filter and count the comments made on articles regarding Science.
+My idea for the project was to first implement the *Flajolet-Martin* algorithm to count the number of unique users who commented on the New York Times in 2020. After that, I implemented a Bloom Filter which was used to filter and count the comments made on articles regarding Science.
 
 ==== Algorithm 1: Flajolet-Martin
 
-The first algorithm I implemented is the `Flajolet-Martin` algorithm.
+The first algorithm I implemented is the *Flajolet-Martin* algorithm.
 
 I thought that a useful feature for the New York Times would be a tool to understand the total traffic of unique users on the site. This helps to better understand user habits, like the time or day they are most likely to be online and comment, versus when they are least active. This would be a great information to understand, for example, at what time they should publish a new article in order to maximize visibility.
 
@@ -49,7 +49,7 @@ Since the algorithm counts the total unique users at specific moment, the progra
 
 ==== Algorithm 2: Bloom Filter
 
-After the implementation of the `Flajolet-Martin` algorithm, i focused on implementing the `Bloom Filter`. By grouping all the comments regarding articles of a specific section, I thought it would be a great feature for the New York Times website to create dedicated subsections. This way, if a user wants to see only specific information, he could land on a specific page with all the information only for that section.
+After the implementation of the *Flajolet-Martin* algorithm, i focused on implementing the *Bloom Filter*. By grouping all the comments regarding articles of a specific section, I thought it would be a great feature for the New York Times website to create dedicated subsections. This way, if a user wants to see only specific information, he could land on a specific page with all the information only for that section.
 To understand which section to build first, a programmer would need to see which sections receive the most comments. With the Bloom Filter, this information can be obtained in a fast and reasonable way.
 
 #pagebreak()
@@ -58,7 +58,7 @@ To understand which section to build first, a programmer would need to see which
 
 In this section of the project, I observed the real-word performance of my implementations.
 
-The approach was to process the dataset and compare the exact result obtained with some built-in Python functions like `set()`, with the estimates obtained from my implementations of the algorithms. This allowed me to verify if the accuracy corresponds to the theorical formula.
+The approach was to process the dataset and compare the exact result obtained with some built-in Python functions like `set()`, with the estimates obtained from my implementations of the algorithms. This allowed me to verify if the accuracy corresponds to the theoretical formula.
 
 Finally, I generated some graphs to visualize the extracted data, in order to make the final results easier to visualize.
 
