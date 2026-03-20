@@ -28,6 +28,8 @@
 
 My idea for the project was to first implement the` Flajolet-Martin` algorithm to count the number of unique users who commented on the New York Times in 2020. After that, I implemented a Bloom Filter which was used to filter and count the comments made on articles regarding Science.
 
+_All the experimental results of the project refer to the version of the dataset downloaded on 20 March 2026._
+
 ==== Algorithm 1: Flajolet-Martin
 
 The first algorithm I implemented is the `Flajolet-Martin` algorithm.
@@ -38,14 +40,14 @@ Since the algorithm counts the total unique users at specific moment, the progra
 
 ==== Algorithm 2: Bloom Filter
 
-After the implementation of the `Flajolet-Martin` algorithm, i focused on implementing the `Bloom Filter`. By grouping all the comments regarding articles of a specific section, I thought it would be a great feature for the New York Times website to create dedicated subsections. This way, if a user wants to see ony specific information, he could land on a specific page with all the information only for that section.
+After the implementation of the `Flajolet-Martin` algorithm, i focused on implementing the `Bloom Filter`. By grouping all the comments regarding articles of a specific section, I thought it would be a great feature for the New York Times website to create dedicated subsections. This way, if a user wants to see only specific information, he could land on a specific page with all the information only for that section.
 To understand which section to build first, a programmer would need to see which sections receive the most comments. With the Bloom Filter, this information can be obtained in a fast and reasonable way.
 
 === Experiments and Scalability Evaluation
 
 In this section of the project, I observed the real-word performance of my implementations.
 
-the approach was to process the dataset and compare the exact result obtained with some built-in Python functions like `set()`, with the estimates obtained from my implementations of the algorithms. This allowed me to verify if the accuracy corresponds to the theorical formula.
+The approach was to process the dataset and compare the exact result obtained with some built-in Python functions like `set()`, with the estimates obtained from my implementations of the algorithms. This allowed me to verify if the accuracy corresponds to the theorical formula.
 
 Finally, I generated some graphs to visualize the extracted data, in order to make the final results easier to visualize.
 
@@ -69,7 +71,7 @@ Looking at the official Pandas documentation for `read_csv` @pydataPandasread_cs
 
 _"Note that the entire file is read into a single DataFrame regardless, use the chunksize or iterator parameter to return the data in chunks."_
 
-So the best approach was to use the *yield* statement directly in Python. This is because the *return* statement terminate the functions and destroy its context, meaning that it has to compute and store all the data before the function ends. Instead, the *yield* statement outputs the result and pauses, processing the data step by step without storing the entire dataset.
+So the best approach was to use the *yield* statement directly in Python. This is because the *return* statement terminates the function and destroy its context, meaning that it has to compute and store all the data before the function ends. Instead, the *yield* statement outputs the result and pauses, processing the data step by step without storing the entire dataset.
 
 === FlajoletMartin algorithm
 
@@ -86,7 +88,7 @@ Running the command:
  cat nyt-comments-part*.csv | wc -l 
 ```
 ]
-to count the total number of lines, I can see that they are circa `13.231.956`.
+to count the total number of lines, I can see that they are circa `13,231,956`.
 
 The project needs to scale up with real-world scenarios, so i used a 128-bit hash functions in order to potentially manage massive datasets.
 
@@ -158,9 +160,9 @@ def analyze_user_ID(self, item):
 
 Initially, I implemented the algorithm strictly following the textbook version analyzed during the course.
 
-Although the execution time was reasonable, the final estimate was significantly over the correct one. To count the real number of unique users I used Python's built-in `set()` data structure, which resulted in `403.025`.
+Although the execution time was reasonable, the final estimate was significantly over the correct one. To count the real number of unique users I used Python's built-in `set()` data structure, which resulted in `403,025`.
 
-However, the algorithm's estimate, even utilizing `256` different hash functions, resulted in `1.091.584`. To understant the issue, I started by debugging the code and printing the various groups to find the reasons behind this overestimation:
+However, the algorithm's estimate, even utilizing `256` different hash functions, resulted in `1,091,584`. To understand the issue, I started by debugging the code and printing the various groups to find the reasons behind this overestimation:
 
 ```python
 Group 1: [524288, 262144, 131072, 131072, 65536, 131072, `8388608`, 262144, `4194304`, 1048576, 262144, 524288, 262144, 131072, `4194304`, `2097152`]
@@ -180,37 +182,37 @@ Group 7: [1048576, 262144, 1048576, 524288, 262144, 65536, `8388608`, 262144, 26
 Group 8: [131072, 262144, 1048576, 8388608, `2097152`, 262144, 262144, 1048576, 524288, 262144, 65536, `33554432`, 524288, 524288, 1048576, 65536]...
 ```
 
-I observed that almost every group contained at least one huge extreme outlier. For instance, group 5 contained value `134.217.728`.
+I observed that almost every group contained at least one huge extreme outlier. For instance, group 5 contained value `134,217,728`.
 
 This led me to think that this version of the algorithm was high susceptible to variance, because a single big hash could compromise the mean of the entire group, causing the algorithm to overestimate. 
 
-Even increasing the number of hash functions or groups led to the same result, just taking a lot more time. With `512` hash functions and `32` groups, the result was still `1.071.104`
+Even increasing the number of hash functions or groups led to the same result, just taking a lot more time. With `512` hash functions and `32` groups, the result was still `1,071,104`
 
 Chasing a better result, I reread the section from the book and found the following quote: 
 
 _"In order to guarantee that any possible average can be obtained, groups should be of size at least a small multiple of log2 m."_
 
-So i tried using `256` hash functions with `7` group, but the resut was still off: `1.217.877`
+So i tried using `256` hash functions with `7` group, but the resut was still off: `1,217,877`
 
 ==== Small research
 
-Wondering how to adjust the algorithm's result, I searched and found great informations on the main wikipedia page for the Flajolet-Martin algorithm @wikipediaFlajoletMartinAlgorithm.
+Wondering how to adjust the algorithm's result, I searched and found great information on the main wikipedia page for the Flajolet-Martin algorithm @wikipediaFlajoletMartinAlgorithm.
 
-At first I noticed the presence of a constant. I found out that it was a *correction factor*, called by the author "the magic constant" $(Phi = 0.77351)$ used to obtain more realistic results, as stated in the original paper @flajolet1985probabilistic.
+At first I noticed the presence of a constant. I found out that it was a *correction factor*, called by the author "the magic constant" $(phi = 0.77351)$ used to obtain more realistic results, as stated in the original paper @flajolet1985probabilistic.
 
-However, even multiplying the previous result for the correction factor did not bring the expected result, because the algorithm result was still `844351` unique users.
+However, even multiplying the previous result for the correction factor did not bring the expected result, because the algorithm result was still `844,351` unique users.
 
 To resolve the problem, I continued reading the wikipedia page and found out that the algorithm underwent an offical evolution in 2003 by the same author, called the *loglog* algorithm @FlajoletLogLog. The base idea of this new algorithm is to calculate the average of the maximum number of trailing zeroes directly, and then return $2^"average"$. So I proceeded by adjusting only the way my algorithm worked: simply changing one line of logic allowed me to get a really good estimate.
 
-Thinking about how to efficiently extract only the trailing zeros, I landend one more time on StackOverflow @stackoverflowPythonicCount.
+Thinking about how to efficiently extract only the trailing zeros, I landed one more time on StackOverflow @stackoverflowPythonicCount.
 
 I found out that with one line of code I could update the algorithm to work directly on the maximum number of trailing zeroes, and then apply the mean and median grouping to keep the variance after control.
 
-Since the result was still not "perfect" (`547500`), even without a theorical base, I decided to use the constant $Phi = 0.77351$ in the ultimate version of my implementation. In the original Flajolet-Martin implementation, the algorithm usually underesitmates the real result. As I saw on the wikipedia page @wikipediaFlajoletMartinAlgorithm and in the original paper @flajolet1985probabilistic, the constant was used to divide the final result: $"res" = "res"/Phi$. Since my implementation without the constant was overstimating, I decided to *multiply* my final result by the constanct, to do a sort of *fine-tuning* specifically for the nyt dataset.
+Since the result was still not "perfect" (`547,500`), even without a theorical base, I decided to use the constant $phi = 0.77351$ in the ultimate version of my implementation. In the original Flajolet-Martin implementation, the algorithm usually underestimates the real result. As I saw on the wikipedia page @wikipediaFlajoletMartinAlgorithm and in the original paper @flajolet1985probabilistic, the constant was used to divide the final result: $"res" = "res"/phi$. Since my implementation without the constant was overestimating, I decided to *multiply* my final result by the constant, to do a sort of *fine-tuning* specifically for the nyt dataset.
 
-With this final implementation the algorithm returned a very good estimate of the real unique users in a reasonable time: `423496` in `6` minutes.
+With this final implementation the algorithm returned a very good estimate of the real unique users in a reasonable time: `423,496` in `6` minutes (`9` on colab)
 
-The fact that my final version is tuned for the dataset in question means that, with another dataset, the results might not be accurate. In that case, the best solutions would be to implement the loglog algorithm of as described in the original paper, to obtain better results.
+The fact that my final version is tuned for the dataset in question means that, with another dataset, the results might not be accurate. In that case, the best solutions would be to implement the loglog algorithm as described in the original paper, to obtain better results.
 
 === Bloom Filter:
 
@@ -226,7 +228,7 @@ In a real-word example this mechanism would be perfect for isolating a specific 
 
 First of all, I needed to create my trusted list $S$, which is basically the collection of all the article IDs regarding science.
 
-To understand the structure of the CSV file i printed out the first line:
+To understand the structure of the CSV file I printed out the first line:
 
 ```terminal
 head -n 1 nyt-articles-2020.csv
@@ -255,7 +257,7 @@ def create_trusted_list(repo):
     return s
 ```
 
-However in this way, if the initial file was too big, I would load to much data into the RAM all at once. The solution, once again, was to use the *yield* keyword to create a generator: 
+However in this way, if the initial file was too big, I would load too much data into the RAM all at once. The solution, once again, was to use the *yield* keyword to create a generator: 
 
 ```python
 def create_trusted_list(repo):
@@ -273,7 +275,7 @@ def create_trusted_list(repo):
 
 ==== Construction (Pre-processing S):
 
-In this phase I needed to initialize an array of `m` bits to `0`, choose `k` indipendent hash functions and, for every key in $S$, hash it with all `k` functions. Finally, I had to set the bits at those resulting indices to `1`.
+In this phase I needed to initialize an array of `m` bits to `0`, choose `k` independent hash functions and, for every key in $S$, hash it with all `k` functions. Finally, I had to set the bits at those resulting indices to `1`.
 
 To understand what value assign to $m$, I initially checked the length of my trusted list $S$: `354` unique articles ($n = 354$)
 
@@ -285,6 +287,73 @@ _"We might choose $k$, the number of hash functions, to be $m/n$ or less"_
 
 Since in this case $n = 354$ and $m = 3540$, the ratio $m/n = 10$
 
-starting from `10`, I tried  some different values for `k` until I found  $k= 7$ provided the best result.
+Starting from `10`, I tried  some different values for `k` until I found  $k= 7$ provided the best result.
 
 == Conclusions
+
+=== Flajolet-Martin implementation
+
+The algorithm returned a very good estimate of the real unique users in a reasonable time: `423,496` in `6` minutes. Considering that the real number of users, calculated by finding the length of the built-in `set()` data structure was `403,025`, this means that the implementation had an error of: 
+
+$423,496 - 403,025 = 20,471$
+
+This translate to a relative error of $20,471/403,025 = 5%$ in `6` minutes, while scanning `13,231,956` lines and using little RAM due to the techniques described above. In my opinion, this makes the implementation suitable for massive datasets in real-world scenarios.
+
+=== Flajolet Scalability Analysis
+
+The space complexity is O(1). This is because, regardless of the size of the dataset, due to the use of `yield`, the step-by-step results are continuously overwritten. As a result, only one hash is present in the RAM at any given time.
+
+During the experimental phase, by changing the number of hashes or the number of groups, I could observe that the time complexity was linear: $O(N times "num_hashes")$ where $N$ is the size of the dataset. This happens because the execution time increases as the number of hashes increases, due to the `for` loop inside the `analyze_user_ID` function.
+
+=== Bloom Filter implementation
+
+Regarding the implementation of the bloom filter, i made an analysis based on the theory I learned in class.
+
+The algorithm returned a value of `39,888` comments about science out of `4,986,461` total comments. To verify the real number, I once again utilized the built-in  Python `set()`, to count the exact number of comments and compared it with the result produced by the filter. This way, I found that the real number of comments regarding Science was `23,698`.
+
+To verify if this was a great result, I can use the mathematical theory that is behind the bloom filter.
+
+The probability that a bit of the bit array is `1` is $1 - e^(-k*(n/m))$. considering that:
+
+- $n = 354$ (science articles)
+- $m = 3540$  (size of the array of zeros)
+- $k = 7$ (number of the hash functions)
+
+$1 - e^(-k*(n/m)) = 1 - e^(-7 * 0.1) = 1 - 0.496 = 0.504$
+
+Since this is the probability of finding a random bit set to `1`, to understand how many bits will be turned on after the initial hashing phase, I can calculate the expected value $E$ as:
+
+$E = 3540 * 0.504 = 1784$
+
+Since i expected to have `1784` bits set to `1`, this means that my filter will be full by the  $1784/3540 = 50.4%$
+
+This is not a casual result, since the filter works well when it is half full, and i observed that $k=7$ give me the best possible result.
+
+Finally, i can calculate the false Positive rate (FPR):
+
+$"FPR" = (1 - e^(-k * n/m))^k = 0.504^7 = 0.8%$
+
+So theoretically my bloom filter should have an error rate of about 0.8 %.
+
+Considering that:
+
+- The filter analyzed `4,986,461` comments
+- The real number of comments about articles regarding science were: `23,698`
+- The comments to discard = $4,986,461 - 23,698 = 4,962,763$ 
+- The output of the bloom filter (comments probably about science) = `39,888`
+
+The false positive actually obtained by the filter were: $39,888 - 23,698 = 16,190$
+
+By calculating the real FPR:
+
+$"FPR"_("real") = (16,190) / (4,962,763) = 0.003$
+
+So the filter obtained an error of 0.3%, a great result.
+
+=== Bloom Filter Scalability Analysis
+
+The space complexity is completely independent of the stream size $N$, because in the implementation I set a fixed amount of RAM $m = 3540$ bits (only the array of bits will be loaded into RAM).
+
+The time complexity can be calculated considering the loop to create the filter, and then the time the filter is used on the data stream, resulting in $O(N times k)$ where k is the number of hash functions.
+
+So basically, the implementation of the algorithm can scale up to millions of comments in a real-world context.
