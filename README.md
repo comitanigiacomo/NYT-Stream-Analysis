@@ -1,6 +1,6 @@
 # Stream Analysis -- NYT Dataset
 
-<a href="https://colab.research.google.com/github/comitanigiacomo/Comitani_85673A_Stream_Analysis/blob/main/Comitani_85673A_Stream_analysis.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+<a href="https://colab.research.google.com/github/comitanigiacomo/NYT-Stream-Analysis/blob/main/Stream_analysis.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 ## Overview
 This repository contains the implementation and evaluation of two fundamental data streaming algorithms: **Flajolet-Martin** and **Bloom Filter**. The project focuses on analyzing a massive dataset of New York Times comments from 2020 within a strictly memory-constrained environment.
